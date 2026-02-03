@@ -1,5 +1,3 @@
-// Copyright (c) 2025 Pedro Lamarão. All rights reserved.
-
 package main
 
 import (
