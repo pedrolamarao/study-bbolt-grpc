@@ -5,13 +5,12 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/proto"
-
-	protocol "purpura.dev.br/study/grpc/protocol"
+	"purpura.dev.br/study/bbolt-grpc/protocol"
 )
 
 func main() {
@@ -26,13 +25,38 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	request := protocol.Request_builder{
-		Message: proto.String(""),
+	switch os.Args[1] {
+	case "get":
+		request := protocol.GetRequest_builder{
+			Bucket: []byte(os.Args[2]),
+			Key:    []byte(os.Args[3]),
+		}
+		response, err := requestor.Get(ctx, request.Build())
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Print(string(response.GetValue()))
+		break
+	case "set":
+		request := protocol.SetRequest_builder{
+			Bucket: []byte(os.Args[2]),
+			Key:    []byte(os.Args[3]),
+			Value:  []byte(os.Args[4]),
+		}
+		_, err := requestor.Set(ctx, request.Build())
+		if err != nil {
+			log.Fatal(err)
+		}
+		break
+	case "clear":
+		request := protocol.ClearRequest_builder{
+			Bucket: []byte(os.Args[2]),
+			Key:    []byte(os.Args[3]),
+		}
+		_, err := requestor.Clear(ctx, request.Build())
+		if err != nil {
+			log.Fatal(err)
+		}
+		break
 	}
-	response, err := requestor.Operation(ctx, request.Build())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Print(response.GetMessage())
 }

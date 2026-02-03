@@ -1,4 +1,4 @@
-= study-grpc-go
+= study-bbolt-grpc
 :author: Pedro Lamarão <pedro.lamarao@gmail.com>
 :icons: font
 
