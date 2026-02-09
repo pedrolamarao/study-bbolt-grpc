@@ -18,43 +18,58 @@ func main() {
 	}
 	defer connection.Close()
 
-	requestor := protocol.NewProtocolClient(connection)
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	switch os.Args[1] {
-	case "get":
-		request := protocol.GetRequest_builder{
-			Bucket: []byte(os.Args[2]),
-			Key:    []byte(os.Args[3]),
-		}
-		response, err := requestor.Get(ctx, request.Build())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Print(string(response.GetValue()))
-		break
-	case "set":
-		request := protocol.SetRequest_builder{
-			Bucket: []byte(os.Args[2]),
-			Key:    []byte(os.Args[3]),
-			Value:  []byte(os.Args[4]),
-		}
-		_, err := requestor.Set(ctx, request.Build())
-		if err != nil {
-			log.Fatal(err)
+	case "bucket":
+		requestor := protocol.NewBucketClient(connection)
+		switch os.Args[2] {
+		case "create":
+			request := protocol.CreateBucketRequest_builder{
+				Bucket: []byte(os.Args[3]),
+			}
+			_, err = requestor.CreateBucket(ctx, request.Build())
+		case "destroy":
+			request := protocol.DestroyBucketRequest_builder{
+				Bucket: []byte(os.Args[3]),
+			}
+			_, err = requestor.DestroyBucket(ctx, request.Build())
 		}
 		break
-	case "clear":
-		request := protocol.ClearRequest_builder{
-			Bucket: []byte(os.Args[2]),
-			Key:    []byte(os.Args[3]),
-		}
-		_, err := requestor.Clear(ctx, request.Build())
-		if err != nil {
-			log.Fatal(err)
+	case "value":
+		requestor := protocol.NewValueClient(connection)
+		switch os.Args[2] {
+		case "get":
+			request := protocol.GetValueRequest_builder{
+				Bucket: []byte(os.Args[3]),
+				Key:    []byte(os.Args[4]),
+			}
+			var response *protocol.GetValueResponse
+			response, err = requestor.GetValue(ctx, request.Build())
+			if response != nil {
+				log.Print(string(response.GetValue()))
+			}
+			break
+		case "set":
+			request := protocol.SetValueRequest_builder{
+				Bucket: []byte(os.Args[3]),
+				Key:    []byte(os.Args[4]),
+				Value:  []byte(os.Args[5]),
+			}
+			_, err = requestor.SetValue(ctx, request.Build())
+			break
+		case "clear":
+			request := protocol.DeleteValueRequest_builder{
+				Bucket: []byte(os.Args[3]),
+				Key:    []byte(os.Args[4]),
+			}
+			_, err = requestor.DeleteValue(ctx, request.Build())
+			break
 		}
 		break
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 }

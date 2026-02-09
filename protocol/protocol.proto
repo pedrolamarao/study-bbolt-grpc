@@ -4,35 +4,53 @@ package br.dev.purpura.study.grpc;
 
 option go_package = "purpura.dev.br/study/grpc/protocol";
 
-message GetRequest {
+message GetValueRequest {
   bytes bucket = 1;
   bytes key = 2;
 }
 
-message GetResponse {
+message GetValueResponse {
   bytes value = 1;
 }
 
-message SetRequest {
+message SetValueRequest {
   bytes bucket = 1;
   bytes key = 2;
   bytes value = 3;
 }
 
-message SetResponse {
+message SetValueResponse {
 }
 
-message ClearRequest {
+message DeleteValueRequest {
   bytes bucket = 1;
   bytes key = 2;
 }
 
-message ClearResponse {
-
+message DeleteValueResponse {
 }
 
-service Protocol {
-  rpc Get (GetRequest) returns (GetResponse) { }
-  rpc Set (SetRequest) returns (SetResponse) { }
-  rpc Clear (ClearRequest) returns (ClearResponse) { }
+service Value {
+  rpc GetValue (GetValueRequest) returns (GetValueResponse) { }
+  rpc SetValue (SetValueRequest) returns (SetValueResponse) { }
+  rpc DeleteValue (DeleteValueRequest) returns (DeleteValueResponse) { }
+}
+
+message CreateBucketRequest {
+  bytes bucket = 1;
+}
+
+message CreateBucketResponse {
+}
+
+message DestroyBucketRequest {
+  bytes bucket = 1;
+}
+
+message DestroyBucketResponse {
+}
+
+service Bucket {
+  rpc CreateBucket (CreateBucketRequest) returns (CreateBucketResponse) { }
+  rpc DestroyBucket (DestroyBucketRequest) returns (DestroyBucketResponse) { }
 }

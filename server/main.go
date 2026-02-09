@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 
@@ -12,12 +13,13 @@ import (
 )
 
 type service struct {
-	protocol.UnimplementedProtocolServer
+	protocol.UnimplementedValueServer
+	protocol.UnimplementedBucketServer
 
 	db *bbolt.DB
 }
 
-func (srv *service) Get(_ context.Context, request *protocol.GetRequest) (*protocol.GetResponse, error) {
+func (srv *service) GetValue(_ context.Context, request *protocol.GetValueRequest) (*protocol.GetValueResponse, error) {
 	var value []byte
 	err := srv.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(request.GetBucket())
@@ -30,19 +32,19 @@ func (srv *service) Get(_ context.Context, request *protocol.GetRequest) (*proto
 	if err != nil {
 		return nil, err
 	}
-	response := &protocol.GetResponse_builder{
+	response := &protocol.GetValueResponse_builder{
 		Value: value,
 	}
 	return response.Build(), nil
 }
 
-func (srv *service) Set(_ context.Context, request *protocol.SetRequest) (*protocol.SetResponse, error) {
+func (srv *service) SetValue(_ context.Context, request *protocol.SetValueRequest) (*protocol.SetValueResponse, error) {
 	err := srv.db.Update(func(tx *bbolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(request.GetBucket())
-		if err != nil {
-			return err
+		bucket := tx.Bucket(request.GetBucket())
+		if bucket == nil {
+			return errors.New("bucket not found")
 		}
-		err = bucket.Put(request.GetKey(), request.GetValue())
+		err := bucket.Put(request.GetKey(), request.GetValue())
 		if err != nil {
 			return err
 		}
@@ -51,17 +53,17 @@ func (srv *service) Set(_ context.Context, request *protocol.SetRequest) (*proto
 	if err != nil {
 		return nil, err
 	}
-	response := &protocol.SetResponse_builder{}
+	response := &protocol.SetValueResponse_builder{}
 	return response.Build(), nil
 }
 
-func (srv *service) Clear(_ context.Context, request *protocol.ClearRequest) (*protocol.ClearResponse, error) {
+func (srv *service) DeleteValue(_ context.Context, request *protocol.DeleteValueRequest) (*protocol.DeleteValueResponse, error) {
 	err := srv.db.Update(func(tx *bbolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(request.GetBucket())
-		if err != nil {
-			return err
+		bucket := tx.Bucket(request.GetBucket())
+		if bucket == nil {
+			return errors.New("bucket not found")
 		}
-		err = bucket.Delete(request.GetKey())
+		err := bucket.Delete(request.GetKey())
 		if err != nil {
 			return err
 		}
@@ -70,7 +72,30 @@ func (srv *service) Clear(_ context.Context, request *protocol.ClearRequest) (*p
 	if err != nil {
 		return nil, err
 	}
-	response := &protocol.ClearResponse_builder{}
+	response := &protocol.DeleteValueResponse_builder{}
+	return response.Build(), nil
+}
+
+func (srv *service) CreateBucket(_ context.Context, request *protocol.CreateBucketRequest) (*protocol.CreateBucketResponse, error) {
+	err := srv.db.Update(func(tx *bbolt.Tx) error {
+		_, err := tx.CreateBucket(request.GetBucket())
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	response := &protocol.CreateBucketResponse_builder{}
+	return response.Build(), nil
+}
+
+func (srv *service) DestroyBucket(_ context.Context, request *protocol.DestroyBucketRequest) (*protocol.DestroyBucketResponse, error) {
+	err := srv.db.Update(func(tx *bbolt.Tx) error {
+		return tx.DeleteBucket(request.GetBucket())
+	})
+	if err != nil {
+		return nil, err
+	}
+	response := &protocol.DestroyBucketResponse_builder{}
 	return response.Build(), nil
 }
 
@@ -89,7 +114,8 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	protocol.RegisterProtocolServer(server, service)
+	protocol.RegisterValueServer(server, service)
+	protocol.RegisterBucketServer(server, service)
 	err = server.Serve(listener)
 	if err != nil {
 		log.Fatal(err)
