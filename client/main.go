@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"pedrolamarao.dev.br/study/bbolt-grpc/protocol"
+	"pedrolamarao.dev.br/study/protocol"
 )
 
 func closeOrPanic(closeable *grpc.ClientConn) {

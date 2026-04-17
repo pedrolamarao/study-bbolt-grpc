@@ -9,7 +9,7 @@ import (
 	"go.etcd.io/bbolt"
 
 	"google.golang.org/grpc"
-	"pedrolamarao.dev.br/study/bbolt-grpc/protocol"
+	"pedrolamarao.dev.br/study/protocol"
 )
 
 type service struct {
