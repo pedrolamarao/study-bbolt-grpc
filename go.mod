@@ -1,6 +1,6 @@
-module pedrolamarao.dev.br/study/bbolt-grpc
+module pedrolamarao.dev.br/study
 
-go 1.25.0
+go 1.25
 
 require (
 	go.etcd.io/bbolt v1.4.3
