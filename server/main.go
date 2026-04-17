@@ -9,7 +9,7 @@ import (
 	"go.etcd.io/bbolt"
 
 	"google.golang.org/grpc"
-	"purpura.dev.br/study/bbolt-grpc/protocol"
+	"pedrolamarao.dev.br/study/bbolt-grpc/protocol"
 )
 
 type service struct {
@@ -99,12 +99,19 @@ func (srv *service) DestroyBucket(_ context.Context, request *protocol.DestroyBu
 	return response.Build(), nil
 }
 
+func closeOrPanic(closeable *bbolt.DB) {
+	err := closeable.Close()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	db, err := bbolt.Open("service.db", 0600, &bbolt.Options{})
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer closeOrPanic(db)
 
 	service := &service{db: db}
 

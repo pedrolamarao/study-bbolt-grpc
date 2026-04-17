@@ -8,15 +8,22 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"purpura.dev.br/study/bbolt-grpc/protocol"
+	"pedrolamarao.dev.br/study/bbolt-grpc/protocol"
 )
+
+func closeOrPanic(closeable *grpc.ClientConn) {
+	err := closeable.Close()
+	if err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	connection, err := grpc.NewClient("127.0.0.1:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer connection.Close()
+	defer closeOrPanic(connection)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

@@ -1,17 +1,10 @@
 = study-bbolt-grpc
-:author: Pedro Lamarão <pedro.lamarao@gmail.com>
+:author: Pedro Lamarão <pedro.unglue658@passinbox.com>
 :icons: font
 
-Preparar:
+Estudo sobre servir um banco de dados bbolt por um protocolo gRPC.
 
-[source,shell]
-----
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-go install github.com/favadi/protoc-go-inject-tag@latest
-----
-
-Gerar protocolo:
+Para gerar o protocolo:
 
 [source,shell]
 ----
