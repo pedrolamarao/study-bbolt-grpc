@@ -2,7 +2,7 @@
 :author: Pedro Lamarão <pedro.unglue658@passinbox.com>
 :icons: font
 
-Estudo sobre servir um banco de dados bbolt por um protocolo gRPC.
+Estudo sobre servir dados chave/valor de bbolt via gRPC.
 
 Para gerar o protocolo:
 
